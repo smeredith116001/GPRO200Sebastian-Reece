@@ -9,7 +9,7 @@
 //	  ray: input ray info
 color4 calcColor(in sViewport vp, in sRay ray)
 {
-    float i = texture(iChannel0, vec2(vp.uv.x, 0.15)).r;
+    float i = texture(iChannel0, vec2(vp.uv.x, 0.15)).r; //https://www.shadertoy.com/view/Wl2GWW
     sSphere sphere;
     initSphere(vec3(0.0, 0.0, -4.0), i, sphere);
     
