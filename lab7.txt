@@ -15,6 +15,19 @@ uniform mat4 uViewProjlMat;
 out vec4 vNormal;
 out vec4 vTexcoord;
 
+struct pLight
+{
+ 	vec4 center, color;
+    float intensity; 
+};
+
+void initPointLight(in vec4 center, in vec4 color, float intensity, out pLight light)
+{
+    light.center = center;
+    light.color = color;
+    light.intensity = abs(intensity);
+}
+
 void main()
 {
 	mat4 modelViewMat = uViewMat * uModelMat;
@@ -33,9 +46,27 @@ void main()
 	vec4 uv_atlas = atlasMat * aTexcoord;
 	
 	vNormal = vec4(norm_camera, 0.0);
+
 	
-	vTexcoord = aTexcoord;
+	//Phong light shit
+	pLight lightSource;
+	initPointLight(vec4(1.0, 1.0, 4.0, 1.0), vec4(0.0, 1.0, 1.0, 1.0), 1.0, lightSource);
+	vec4 lightVec = normalize(lightSource.center - vTexcoord);
 	
+	vec4 viewVec = normalize(pos_clip - vTexcoord);
+	vec4 refLightVec = reflect(-lightVec, vNormal);
+	float specCoefficient = max(0.0, dot(viewVec, refLightVec));
+	
+	vTexcoord = vec4(specCoefficient);
+	
+	
+	
+	
+	
+	
+	
+	
+	//vTexcoord = aTexcoord;
 }
 
 
@@ -51,10 +82,11 @@ precision highp float;
 layout (location = 0) out vec4 rtFragColor;
 
 in vec4 vNormal;
-in vec2 vTexCoord;
+in vec4 vTexcoord;
 
 void main()
 {
 	vec4 N = normalize(vNormal);
 	rtFragColor = vec4(N.xyz * 0.5 + 0.5, 1.0);
+	rtFragColor = vTexcoord;
 }
