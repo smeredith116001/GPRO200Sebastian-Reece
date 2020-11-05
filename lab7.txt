@@ -31,7 +31,7 @@ void initPointLight(in vec4 center, in vec4 color, float intensity, out pLight l
 void main()
 {
 	mat4 modelViewMat = uViewMat * uModelMat;
-	vec4 pos_camera = modelViewMat *aPosition;
+	vec4 pos_camera = modelViewMat * aPosition;
 	vec4 pos_clip = uProjMat * pos_camera;
 	gl_Position = pos_clip;
 	
@@ -46,20 +46,29 @@ void main()
 	vec4 uv_atlas = atlasMat * aTexcoord;
 	
 	vNormal = vec4(norm_camera, 0.0);
-
 	
-	//Phong light shit
-	pLight lightSource;
-	initPointLight(vec4(1.0, 1.0, 4.0, 1.0), vec4(0.0, 1.0, 1.0, 1.0), 1.0, lightSource);
+		pLight lightSource;
+	initPointLight(vec4(0.0, 1.0, 4.0, 1.0), vec4(1.0, 1.0, 1.0, 1.0), 4.0, lightSource);
+	//Lambertian Shit
 	vec4 lightVec = normalize(lightSource.center - vTexcoord);
+	float diffuseCoefficient = max(0.0, dot(vNormal, lightVec));
+	float d = length(lightVec);
+	float attenuation = 1.0 / (1.0 + (d/lightSource.intensity) + (d * d)/(lightSource.intensity * lightSource.intensity));
+	float intensity = diffuseCoefficient * attenuation;
+	//Phong light shit
 	
-	vec4 viewVec = normalize(pos_clip - vTexcoord);
+	
+	vec4 viewVec = normalize(vec4(norm_camera, 0.0) - vTexcoord);
 	vec4 refLightVec = reflect(-lightVec, vNormal);
 	float specCoefficient = max(0.0, dot(viewVec, refLightVec));
+	float specIntensity = pow(specCoefficient, 16.0);
 	
-	vTexcoord = vec4(specCoefficient);
+	float ambientIntensity = 0.1;
+	vec4 ambientColor = vec4(0.0, 1.0, 1.0, 1.0);
+	vec4 specRefColor = vec4(1.0, 1.0, 1.0, 1.0);
 	
-	
+	vec4 phong = (ambientIntensity * ambientColor) + ((intensity * vNormal + specIntensity * specRefColor) * lightSource.color);
+	vTexcoord = vec4(phong);
 	
 	
 	
